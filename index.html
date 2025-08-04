@@ -1,16 +1,18 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Real-Time Chat</title>
+  <title>GangMonkey Chat</title>
   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; }
-    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+    #usernameDisplay { position: absolute; top: 10px; left: 10px; font-weight: bold; }
+    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-top: 40px; }
     #input { margin-top: 10px; }
   </style>
 </head>
 <body>
+  <div id="usernameDisplay">Logged in as: <span id="usernameText">Guest</span></div>
+
   <h2>Chat</h2>
   <div id="chat"></div>
   <div id="input">
@@ -18,26 +20,31 @@
     <button onclick="sendMessage()">Send</button>
   </div>
 
-<script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-<script>
-  const socket = io('https://socket-server-7hax.onrender.com');
+  <script>
+    // Display logged-in user name (top-left)
+    const usernameText = document.getElementById('usernameText');
+    const storedUser = localStorage.getItem("gangmonkeyUser");
+    const username = storedUser || "Guest";
+    usernameText.textContent = username;
 
-  socket.on('message', msg => {
-    const chat = document.getElementById('chat');
-    const div = document.createElement('div');
-    div.textContent = msg;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-  });
+    const socket = io('https://socket-server-7hax.onrender.com'); // Replace with your server URL
 
-  function sendMessage() {
-    const input = document.getElementById('message');
-    const msg = input.value.trim();
-    if (msg) {
-      socket.emit('message', msg);
-      input.value = '';
+    socket.on('message', data => {
+      const chat = document.getElementById('chat');
+      const div = document.createElement('div');
+      div.textContent = `${data.username}: ${data.text}`;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    });
+
+    function sendMessage() {
+      const input = document.getElementById('message');
+      const msg = input.value.trim();
+      if (msg) {
+        socket.emit('message', { username, text: msg });
+        input.value = '';
+      }
     }
-  }
-</script>
+  </script>
 </body>
 </html>
